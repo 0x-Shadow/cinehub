@@ -1,0 +1,109 @@
+import { Link } from "react-router-dom";
+import { img, mediaType, titleOf } from "../api/tmdb.js";
+import { yearOf } from "../lib/format.js";
+import { makeEntry } from "../lib/library.js";
+import Rating from "./Rating.jsx";
+import useLibrary from "../hooks/useLibrary.js";
+
+const SIZES = {
+  sm: "w-28 sm:w-32",
+  md: "w-36 sm:w-44",
+  lg: "w-44 sm:w-52",
+};
+
+export function BookmarkIcon({ filled = false }) {
+  return (
+    <svg width="16" height="16" viewBox="0 0 24 24" fill={filled ? "currentColor" : "none"} stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+      <path d="M19 21l-7-5-7 5V5a2 2 0 0 1 2-2h10a2 2 0 0 1 2 2z" />
+    </svg>
+  );
+}
+
+export function HeartIcon({ filled = false }) {
+  return (
+    <svg width="16" height="16" viewBox="0 0 24 24" fill={filled ? "currentColor" : "none"} stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+      <path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z" />
+    </svg>
+  );
+}
+
+function IconButton({ children, label, active = false, onClick }) {
+  return (
+    <button
+      type="button"
+      onClick={onClick}
+      aria-label={label}
+      aria-pressed={active}
+      className={`flex h-8 w-8 items-center justify-center rounded-full backdrop-blur transition ${
+        active ? "bg-accent text-accent-ink" : "bg-black/50 text-white hover:bg-black/70"
+      }`}
+    >
+      {children}
+    </button>
+  );
+}
+
+export default function PosterCard({ item, size = "md", showRating = true, priority = false }) {
+  const { toggleWatchlist, isWatchlisted, toggleFavorite, isFavorite } = useLibrary();
+  const type = mediaType(item);
+  const inWatchlist = isWatchlisted(item.id, type);
+  const isFav = isFavorite(item.id, type);
+
+  const posterPath = item.posterPath ?? item.poster_path;
+  const base = makeEntry(titleOf(item), type, item.id, posterPath, {
+    vote_average: item.vote_average,
+  });
+
+  return (
+    <div className={`group relative shrink-0 ${SIZES[size]}`}>
+      <Link
+        to={`/${type}/${item.id}`}
+        className="relative block overflow-hidden rounded-xl bg-surface"
+        aria-label={titleOf(item)}
+      >
+        {posterPath ? (
+          <img
+            src={img(posterPath, size === "sm" ? "w300" : "w500")}
+            alt={titleOf(item)}
+            loading={priority ? "eager" : "lazy"}
+            fetchpriority={priority ? "high" : "auto"}
+            className="aspect-[2/3] w-full object-cover transition duration-300 ease-[var(--ease-apple)] group-hover:brightness-[.7]"
+            width={size === "sm" ? 300 : 500}
+            height={size === "sm" ? 450 : 750}
+          />
+        ) : (
+          <div className="aspect-[2/3] w-full animate-pulse rounded-xl bg-surface-raised" />
+        )}
+        <div className="pointer-events-none absolute inset-0 bg-gradient-to-t from-black/80 via-black/0 to-black/0 opacity-0 transition duration-300 group-hover:opacity-100" />
+      </Link>
+
+      <div className="absolute left-2 top-2 flex flex-col gap-1.5 opacity-0 transition duration-300 group-hover:opacity-100">
+        <IconButton
+          label={inWatchlist ? "Remove from watchlist" : "Add to watchlist"}
+          active={inWatchlist}
+          onClick={() => toggleWatchlist(base)}
+        >
+          <BookmarkIcon filled={inWatchlist} />
+        </IconButton>
+        <IconButton
+          label={isFav ? "Remove from favourites" : "Add to favourites"}
+          active={isFav}
+          onClick={() => toggleFavorite(base)}
+        >
+          <HeartIcon filled={isFav} />
+        </IconButton>
+      </div>
+
+      {showRating ? (
+        <div className="absolute bottom-2 left-2">
+          <Rating value={item.vote_average} size="sm" />
+        </div>
+      ) : null}
+
+      <div className="mt-2 px-0.5">
+        <p className="truncate text-sm font-medium text-ink">{titleOf(item)}</p>
+        <p className="text-xs tabular text-faint">{yearOf(item.release_date ?? item.first_air_date)}</p>
+      </div>
+    </div>
+  );
+}
