@@ -3,6 +3,7 @@ import { useSearchParams } from "react-router-dom";
 import PageShell from "./PageShell.jsx";
 import PosterGrid from "../components/PosterGrid.jsx";
 import Chip from "../components/Chip.jsx";
+import ErrorState from "../components/ErrorState.jsx";
 import useTmdb from "../hooks/useTmdb.js";
 import useInfiniteScroll from "../hooks/useInfiniteScroll.js";
 import { listGenres, movieList } from "../api/tmdb.js";
@@ -86,9 +87,7 @@ export default function Movies() {
         {query.loading && items.length === 0 ? (
           <PosterGrid items={[]} loading skeletonCount={12} />
         ) : query.error ? (
-          <div className="rounded-2xl border border-border bg-surface p-8 text-center text-sm text-muted">
-            {query.error}
-          </div>
+          <ErrorState message={query.error} onRetry={query.refresh} />
         ) : (
           <PosterGrid items={filtered} />
         )}

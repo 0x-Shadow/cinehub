@@ -15,15 +15,18 @@ function tone(value) {
 export default function Rating({ value, size = "md" }) {
   const rating = roundRating(value);
   if (rating === undefined) {
-    return <span className="text-sm tabular text-faint">—</span>;
+    return <span className="text-sm tabular text-faint">--</span>;
   }
 
   if (size === "sm") {
     return (
       <span
-        className="inline-flex items-center rounded-md bg-surface-raised px-1.5 py-0.5 text-[11px] font-semibold tabular"
+        className="glass inline-flex items-center gap-1 rounded-lg px-2 py-1 text-[11px] font-semibold tabular ring-1 ring-white/10"
         style={{ color: tone(rating) }}
       >
+        <svg width="10" height="10" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true">
+          <path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z" />
+        </svg>
         {rating.toFixed(1)}
       </span>
     );
@@ -34,7 +37,7 @@ export default function Rating({ value, size = "md" }) {
 
   return (
     <span
-      className={`relative inline-flex items-center justify-center rounded-full ${SIZES[size]}`}
+      className={`relative inline-flex items-center justify-center rounded-full transition-transform duration-300 hover:scale-110 ${SIZES[size]}`}
       style={{
         background: `conic-gradient(${tone(rating)} ${(rating / 10) * 360}deg, var(--color-surface-raised) 0deg)`,
       }}

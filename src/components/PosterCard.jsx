@@ -6,9 +6,9 @@ import Rating from "./Rating.jsx";
 import useLibrary from "../hooks/useLibrary.js";
 
 const SIZES = {
-  sm: "w-28 sm:w-32",
-  md: "w-36 sm:w-44",
-  lg: "w-44 sm:w-52",
+  sm: "w-28 xs:w-32 sm:w-36",
+  md: "w-36 sm:w-40 md:w-44",
+  lg: "w-44 sm:w-48 md:w-52",
 };
 
 export function BookmarkIcon({ filled = false }) {
@@ -34,8 +34,10 @@ function IconButton({ children, label, active = false, onClick }) {
       onClick={onClick}
       aria-label={label}
       aria-pressed={active}
-      className={`flex h-8 w-8 items-center justify-center rounded-full backdrop-blur transition ${
-        active ? "bg-accent text-accent-ink" : "bg-black/50 text-white hover:bg-black/70"
+      className={`tap-target flex h-9 w-9 items-center justify-center rounded-full backdrop-blur-md transition-all duration-300 ease-[var(--ease-apple)] ${
+        active
+          ? "scale-110 bg-accent text-accent-ink shadow-lg shadow-accent/30"
+          : "bg-black/60 text-white hover:scale-105 hover:bg-black/80"
       }`}
     >
       {children}
@@ -58,7 +60,7 @@ export default function PosterCard({ item, size = "md", showRating = true, prior
     <div className={`group relative shrink-0 ${SIZES[size]}`}>
       <Link
         to={`/${type}/${item.id}`}
-        className="relative block overflow-hidden rounded-xl bg-surface"
+        className="card-lift shine relative block overflow-hidden rounded-xl bg-surface ring-1 ring-border"
         aria-label={titleOf(item)}
       >
         {posterPath ? (
@@ -67,17 +69,23 @@ export default function PosterCard({ item, size = "md", showRating = true, prior
             alt={titleOf(item)}
             loading={priority ? "eager" : "lazy"}
             fetchpriority={priority ? "high" : "auto"}
-            className="aspect-[2/3] w-full object-cover transition duration-300 ease-[var(--ease-apple)] group-hover:brightness-[.7]"
+            className="aspect-[2/3] w-full object-cover transition duration-500 ease-[var(--ease-apple)] group-hover:scale-[1.03] group-hover:brightness-[.65]"
             width={size === "sm" ? 300 : 500}
             height={size === "sm" ? 450 : 750}
           />
         ) : (
-          <div className="aspect-[2/3] w-full animate-pulse rounded-xl bg-surface-raised" />
+          <div className="flex aspect-[2/3] w-full items-center justify-center rounded-xl bg-surface-raised">
+            <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" className="text-faint" aria-hidden="true">
+              <rect x="3" y="3" width="18" height="18" rx="2" />
+              <circle cx="8.5" cy="8.5" r="1.5" />
+              <path d="M21 15l-5-5L5 21" />
+            </svg>
+          </div>
         )}
-        <div className="pointer-events-none absolute inset-0 bg-gradient-to-t from-black/80 via-black/0 to-black/0 opacity-0 transition duration-300 group-hover:opacity-100" />
+        <div className="pointer-events-none absolute inset-0 bg-gradient-to-t from-black/70 via-black/0 to-black/0 opacity-0 transition duration-300 group-hover:opacity-100" />
       </Link>
 
-      <div className="absolute left-2 top-2 flex flex-col gap-1.5 opacity-0 transition duration-300 group-hover:opacity-100">
+      <div className="absolute left-2 top-2 flex flex-col gap-1.5 opacity-0 transition duration-300 ease-[var(--ease-apple)] group-hover:opacity-100">
         <IconButton
           label={inWatchlist ? "Remove from watchlist" : "Add to watchlist"}
           active={inWatchlist}
@@ -95,13 +103,15 @@ export default function PosterCard({ item, size = "md", showRating = true, prior
       </div>
 
       {showRating ? (
-        <div className="absolute bottom-2 left-2">
+        <div className="absolute bottom-2 left-2 transition duration-300 group-hover:scale-110">
           <Rating value={item.vote_average} size="sm" />
         </div>
       ) : null}
 
       <div className="mt-2 px-0.5">
-        <p className="truncate text-sm font-medium text-ink">{titleOf(item)}</p>
+        <p className="truncate text-sm font-medium text-ink transition group-hover:text-accent">
+          {titleOf(item)}
+        </p>
         <p className="text-xs tabular text-faint">{yearOf(item.release_date ?? item.first_air_date)}</p>
       </div>
     </div>

@@ -25,13 +25,13 @@ export default function Home() {
         <Reveal>
           <Rail title="Trending this week" items={trendingQuery.data?.results ?? []} href="/search" loading={trendingQuery.loading} />
         </Reveal>
-        <Reveal>
+        <Reveal delay={80}>
           <Rail title="Trending movies" items={moviesQuery.data?.results ?? []} href="/movies" loading={moviesQuery.loading} />
         </Reveal>
-        <Reveal>
+        <Reveal delay={160}>
           <Rail title="Trending TV shows" items={tvQuery.data?.results ?? []} href="/tvshows" loading={tvQuery.loading} />
         </Reveal>
-        <Reveal>
+        <Reveal delay={240}>
           <Rail title="Top rated" items={topRatedQuery.data?.results ?? []} href="/movies?sort=top_rated" loading={topRatedQuery.loading} />
         </Reveal>
       </div>

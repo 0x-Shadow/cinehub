@@ -19,6 +19,64 @@
   --font-display: "Instrument Serif", ui-serif, Georgia, serif;
 
   --ease-apple: cubic-bezier(0.32, 0.72, 0, 1);
+  --ease-spring: cubic-bezier(0.34, 1.56, 0.64, 1);
+
+  --animate-shine: shine 600ms var(--ease-apple);
+  --animate-modal-in: modalIn 280ms var(--ease-apple);
+  --animate-backdrop-in: backdropIn 320ms var(--ease-apple);
+  --animate-pulse-soft: pulseSoft 2s ease-in-out infinite;
+}
+
+@keyframes shine {
+  from {
+    transform: translateX(-100%);
+  }
+  to {
+    transform: translateX(100%);
+  }
+}
+
+@keyframes modalIn {
+  from {
+    opacity: 0;
+    transform: scale(0.92) translateY(8px);
+  }
+  to {
+    opacity: 1;
+    transform: none;
+  }
+}
+
+@keyframes backdropIn {
+  from {
+    opacity: 0;
+    transform: scale(1.04);
+  }
+  to {
+    opacity: 1;
+    transform: none;
+  }
+}
+
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+    transform: translateY(10px);
+  }
+  to {
+    opacity: 1;
+    transform: none;
+  }
+}
+
+@keyframes pulseSoft {
+  0%,
+  100% {
+    opacity: 1;
+  }
+  50% {
+    opacity: 0.5;
+  }
 }
 
 @layer base {
@@ -39,6 +97,7 @@
     -webkit-font-smoothing: antialiased;
     -moz-osx-font-smoothing: grayscale;
     text-rendering: optimizeLegibility;
+    overflow-x: hidden;
   }
 
   ::selection {
@@ -59,6 +118,7 @@
 
   button {
     cursor: pointer;
+    -webkit-tap-highlight-color: transparent;
   }
 
   button:disabled {
@@ -72,19 +132,18 @@
   }
 
   ::-webkit-scrollbar {
-    width: 10px;
-    height: 10px;
+    width: 8px;
+    height: 8px;
   }
   ::-webkit-scrollbar-track {
     background: transparent;
   }
   ::-webkit-scrollbar-thumb {
-    background: color-mix(in srgb, var(--color-faint) 40%, transparent);
+    background: color-mix(in srgb, var(--color-faint) 35%, transparent);
     border-radius: 999px;
-    border: 2px solid var(--color-canvas);
   }
   ::-webkit-scrollbar-thumb:hover {
-    background: color-mix(in srgb, var(--color-faint) 70%, transparent);
+    background: color-mix(in srgb, var(--color-faint) 60%, transparent);
   }
 }
 
@@ -101,20 +160,90 @@
     scroll-snap-align: start;
   }
 
+  .rail-mask {
+    mask-image: linear-gradient(
+      to right,
+      transparent,
+      black 48px,
+      black calc(100% - 48px),
+      transparent
+    );
+    -webkit-mask-image: linear-gradient(
+      to right,
+      transparent,
+      black 48px,
+      black calc(100% - 48px),
+      transparent
+    );
+  }
+
   .reveal {
     opacity: 0;
-    transform: translateY(12px);
+    transform: translateY(16px);
     transition:
-      opacity 420ms var(--ease-apple),
-      transform 420ms var(--ease-apple);
+      opacity 500ms var(--ease-apple),
+      transform 500ms var(--ease-apple);
   }
   .reveal.is-visible {
     opacity: 1;
     transform: none;
   }
 
+  .glass {
+    background: color-mix(in srgb, var(--color-canvas) 60%, transparent);
+    backdrop-filter: blur(20px) saturate(180%);
+    -webkit-backdrop-filter: blur(20px) saturate(180%);
+  }
+
+  .card-lift {
+    transition:
+      transform 350ms var(--ease-apple),
+      box-shadow 350ms var(--ease-apple),
+      border-color 350ms var(--ease-apple);
+  }
+  .card-lift:hover {
+    transform: translateY(-4px);
+    box-shadow:
+      0 12px 40px -12px rgba(0, 0, 0, 0.5),
+      0 0 0 1px color-mix(in srgb, var(--color-accent) 20%, transparent);
+  }
+
+  .shine {
+    position: relative;
+    overflow: hidden;
+  }
+  .shine::after {
+    content: "";
+    position: absolute;
+    inset: 0;
+    background: linear-gradient(
+      105deg,
+      transparent 40%,
+      rgba(255, 255, 255, 0.12) 50%,
+      transparent 60%
+    );
+    transform: translateX(-100%);
+    pointer-events: none;
+  }
+  .group:hover .shine::after {
+    animation: shine 600ms var(--ease-apple);
+  }
+
   .tabular {
     font-variant-numeric: tabular-nums;
+  }
+
+  .animate-pulse-soft {
+    animation: pulseSoft 2s ease-in-out infinite;
+  }
+
+  .tap-target {
+    min-height: 44px;
+    min-width: 44px;
+  }
+
+  .safe-bottom {
+    padding-bottom: env(safe-area-inset-bottom, 0px);
   }
 }
 

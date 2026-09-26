@@ -25,13 +25,13 @@ export default function TrailerModal({ video, title, onClose }) {
 
   return (
     <div
-      className="fixed inset-0 z-[60] flex items-center justify-center bg-black/80 p-4 backdrop-blur-sm"
+      className="fixed inset-0 z-[60] flex items-center justify-center bg-black/85 p-4 backdrop-blur-md animate-backdrop-in"
       onClick={onClose}
       role="dialog"
       aria-modal="true"
       aria-label={`${title} trailer`}
     >
-      <div className="w-full max-w-4xl" onClick={(e) => e.stopPropagation()}>
+      <div className="w-full max-w-4xl animate-modal-in" onClick={(e) => e.stopPropagation()}>
         <div className="mb-3 flex items-center justify-between">
           <p className="truncate text-sm font-medium text-ink">{title} — Official trailer</p>
           <button
@@ -39,7 +39,7 @@ export default function TrailerModal({ video, title, onClose }) {
             type="button"
             onClick={onClose}
             aria-label="Close trailer"
-            className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-surface-raised text-ink transition hover:bg-surface"
+            className="tap-target flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-surface-raised text-ink transition hover:bg-surface hover:scale-105"
           >
             <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" aria-hidden="true">
               <path d="M6 6l12 12M18 6L6 18" />
@@ -47,7 +47,7 @@ export default function TrailerModal({ video, title, onClose }) {
           </button>
         </div>
         {src ? (
-          <div className="aspect-video w-full overflow-hidden rounded-2xl border border-border bg-black">
+          <div className="aspect-video w-full overflow-hidden rounded-2xl border border-border bg-black shadow-2xl">
             <iframe
               src={src}
               title={`${title} trailer`}

@@ -28,7 +28,7 @@ export default function Detail() {
   if (query.loading) {
     return (
       <main className="mx-auto max-w-6xl px-4 sm:px-6">
-        <div className="mt-16 h-[60vh] animate-pulse rounded-2xl bg-surface" />
+        <div className="mt-16 h-[60vh] animate-pulse-soft rounded-2xl bg-surface" />
       </main>
     );
   }
@@ -67,7 +67,7 @@ export default function Detail() {
           <button
             type="button"
             onClick={() => setTrailerOpen(true)}
-            className="inline-flex items-center gap-2 rounded-full bg-surface-raised px-5 py-2.5 text-sm font-semibold text-ink transition hover:bg-surface"
+            className="tap-target inline-flex items-center gap-2 rounded-full bg-surface-raised px-5 py-2.5 text-sm font-semibold text-ink transition-all duration-300 hover:bg-surface hover:scale-[1.02]"
           >
             <svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true">
               <path d="M8 5v14l11-7z" />
@@ -80,9 +80,9 @@ export default function Detail() {
           <DetailStat label="Status" value={d.status} />
           <DetailStat
             label={isMovie ? "Runtime" : "Seasons"}
-            value={isMovie ? formatRuntime(runtime) : String(d.number_of_seasons ?? "—")}
+            value={isMovie ? formatRuntime(runtime) : String(d.number_of_seasons ?? "--")}
           />
-          <DetailStat label="Episodes" value={isMovie ? "—" : String(d.number_of_episodes ?? "—")} />
+          <DetailStat label="Episodes" value={isMovie ? "--" : String(d.number_of_episodes ?? "--")} />
           {isMovie ? (
             <>
               <DetailStat label="Budget" value={formatMoney(d.budget)} />
@@ -105,7 +105,7 @@ export default function Detail() {
 }
 
 function DetailStat({ label, value }) {
-  if (!value || value === "—") return null;
+  if (!value || value === "--") return null;
   return (
     <div>
       <p className="text-xs font-semibold uppercase tracking-[0.15em] text-faint">{label}</p>

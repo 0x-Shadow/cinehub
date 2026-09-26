@@ -42,7 +42,10 @@ export default function Footer() {
               <ul className="mt-4 space-y-2.5">
                 {col.links.map((link) => (
                   <li key={link.label}>
-                    <Link to={link.to} className="text-sm text-muted transition hover:text-ink">
+                    <Link
+                      to={link.to}
+                      className="text-sm text-muted underline-offset-4 transition hover:text-ink hover:underline"
+                    >
                       {link.label}
                     </Link>
                   </li>
@@ -65,7 +68,7 @@ export default function Footer() {
             </a>
             . This product uses the TMDB API but is not endorsed or certified by TMDB.
           </p>
-          <p>© {new Date().getFullYear()} CineHub.</p>
+          <p>&copy; {new Date().getFullYear()} CineHub.</p>
         </div>
       </div>
     </footer>

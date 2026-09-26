@@ -132,7 +132,7 @@ export default function Library() {
 
 function StatCard({ label, value }) {
   return (
-    <div className="rounded-2xl border border-border bg-surface p-5">
+    <div className="card-lift rounded-2xl border border-border bg-surface p-5">
       <p className="text-xs font-semibold uppercase tracking-[0.15em] text-faint">{label}</p>
       <p className="mt-1 text-2xl font-semibold tabular text-ink">{value}</p>
     </div>

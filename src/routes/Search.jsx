@@ -56,14 +56,14 @@ export default function Search() {
             type="search"
             value={input}
             onChange={(e) => setInput(e.target.value)}
-            placeholder="Search movies and TV shows…"
+            placeholder="Search movies and TV shows..."
             aria-label="Search"
             autoFocus
-            className="w-full rounded-full border border-border bg-surface px-5 py-3 text-sm text-ink placeholder:text-faint focus:border-accent focus:outline-none"
+            className="w-full rounded-full border border-border bg-surface px-5 py-3 text-sm text-ink placeholder:text-faint transition focus:border-accent focus:outline-none"
           />
           <button
             type="submit"
-            className="shrink-0 rounded-full bg-accent px-5 py-3 text-sm font-semibold text-accent-ink transition hover:brightness-110"
+            className="tap-target shrink-0 rounded-full bg-accent px-5 py-3 text-sm font-semibold text-accent-ink transition hover:brightness-110"
           >
             Search
           </button>
@@ -84,7 +84,7 @@ export default function Search() {
         ) : !debounced.trim() ? (
           <EmptyState title="Start typing to search" message="Search across movies and TV shows." />
         ) : results.length === 0 ? (
-          <EmptyState title={`No results for “${debounced.trim()}”`} message="Try a different title, or check the spelling." />
+          <EmptyState title={`No results for "${debounced.trim()}"`} message="Try a different title, or check the spelling." />
         ) : (
           <>
             <p className="text-sm text-muted">
