@@ -106,12 +106,12 @@ export default function SearchBar({ autoFocus = false, placeholder = "Search mov
           }}
           placeholder={placeholder}
           aria-label="Search movies and TV shows"
-          className="w-full rounded-full border border-border bg-surface/80 py-3 pl-5 pr-12 text-sm text-ink placeholder:text-faint backdrop-blur transition focus:border-accent focus:outline-none"
+          className="glass-soft w-full rounded-full border border-border py-3 pl-5 pr-12 text-sm text-ink placeholder:text-faint transition focus:border-accent focus:outline-none"
         />
       </form>
 
       {open && query.trim() ? (
-        <div className="absolute left-0 right-0 top-full z-50 mt-2 overflow-hidden rounded-2xl border border-border bg-surface shadow-2xl">
+        <div className="glass-strong absolute left-0 right-0 top-full z-50 mt-2 overflow-hidden rounded-2xl border border-border shadow-2xl">
           {loading && !results.length ? (
             <div className="px-4 py-6 text-center text-sm text-muted">Searching…</div>
           ) : results.length === 0 ? (

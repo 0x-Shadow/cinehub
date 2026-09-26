@@ -74,10 +74,10 @@ export default function Backdrop({ title, subtitle, backdropPath, posterPath, ra
                 type="button"
                 onClick={() => toggleWatchlist(action)}
                 aria-pressed={inWatchlist}
-                className={`tap-target inline-flex items-center gap-2 rounded-full px-5 py-2.5 text-sm font-semibold transition-all duration-300 ${
+                className={`tap-target glass inline-flex items-center gap-2 rounded-full px-5 py-2.5 text-sm font-semibold ring-1 transition-all duration-300 ${
                   inWatchlist
-                    ? "bg-accent text-accent-ink shadow-lg shadow-accent/20"
-                    : "bg-surface-raised text-ink hover:bg-surface"
+                    ? "bg-accent text-accent-ink shadow-lg shadow-accent/20 ring-accent/50"
+                    : "text-ink ring-white/10 hover:ring-white/20"
                 }`}
               >
                 <BookmarkIcon filled={inWatchlist} />

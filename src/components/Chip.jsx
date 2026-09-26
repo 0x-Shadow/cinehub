@@ -1,9 +1,9 @@
 export default function Chip({ children, active = false, onClick, className = "" }) {
   const base =
-    "inline-flex shrink-0 items-center rounded-full border px-3.5 py-1.5 text-sm font-medium transition";
+    "glass-soft inline-flex shrink-0 items-center rounded-full border px-3.5 py-1.5 text-sm font-medium transition-all duration-300";
   const tone = active
-    ? "border-accent bg-accent text-accent-ink"
-    : "border-border bg-surface text-muted hover:border-faint hover:text-ink";
+    ? "glass-card border-accent/50 bg-accent/15 text-accent"
+    : "border-border text-muted hover:border-faint hover:text-ink";
 
   if (onClick) {
     return (

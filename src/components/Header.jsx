@@ -42,10 +42,10 @@ export default function Header() {
                   to={item.to}
                   end={item.to === "/"}
                   className={({ isActive }) =>
-                    `tap-target relative inline-flex items-center gap-1.5 rounded-full px-4 py-2 text-sm font-medium transition-all duration-300 ${
+                    `tap-target glass relative inline-flex items-center gap-1.5 rounded-full px-4 py-2 text-sm font-medium ring-1 ring-transparent transition-all duration-300 ${
                       isActive
-                        ? "bg-surface-raised text-ink"
-                        : "text-muted hover:bg-surface hover:text-ink"
+                        ? "glass-card text-ink ring-white/10"
+                        : "text-muted hover:text-ink hover:ring-white/5"
                     }`
                   }
                 >

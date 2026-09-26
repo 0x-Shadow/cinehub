@@ -34,10 +34,10 @@ function IconButton({ children, label, active = false, onClick }) {
       onClick={onClick}
       aria-label={label}
       aria-pressed={active}
-      className={`tap-target flex h-9 w-9 items-center justify-center rounded-full backdrop-blur-md transition-all duration-300 ease-[var(--ease-apple)] ${
+      className={`tap-target glass flex h-9 w-9 items-center justify-center rounded-full ring-1 ring-white/10 transition-all duration-300 ease-[var(--ease-apple)] ${
         active
-          ? "scale-110 bg-accent text-accent-ink shadow-lg shadow-accent/30"
-          : "bg-black/60 text-white hover:scale-105 hover:bg-black/80"
+          ? "scale-110 bg-accent text-accent-ink shadow-lg shadow-accent/30 ring-accent/50"
+          : "text-white hover:scale-105"
       }`}
     >
       {children}
@@ -83,9 +83,15 @@ export default function PosterCard({ item, size = "md", showRating = true, prior
           </div>
         )}
         <div className="pointer-events-none absolute inset-0 bg-gradient-to-t from-black/70 via-black/0 to-black/0 opacity-0 transition duration-300 group-hover:opacity-100" />
+
+        {showRating && item.vote_average ? (
+          <div className="absolute bottom-2.5 left-2.5 transition-transform duration-300 ease-[var(--ease-apple)] group-hover:scale-110 group-hover:-translate-y-0.5">
+            <Rating value={item.vote_average} size="sm" />
+          </div>
+        ) : null}
       </Link>
 
-      <div className="absolute left-2 top-2 flex flex-col gap-1.5 opacity-0 transition duration-300 ease-[var(--ease-apple)] group-hover:opacity-100">
+      <div className="absolute left-2 top-2 z-10 flex flex-col gap-1.5 opacity-0 transition-all duration-300 ease-[var(--ease-apple)] group-hover:opacity-100">
         <IconButton
           label={inWatchlist ? "Remove from watchlist" : "Add to watchlist"}
           active={inWatchlist}
@@ -101,12 +107,6 @@ export default function PosterCard({ item, size = "md", showRating = true, prior
           <HeartIcon filled={isFav} />
         </IconButton>
       </div>
-
-      {showRating ? (
-        <div className="absolute bottom-2 left-2 transition duration-300 group-hover:scale-110">
-          <Rating value={item.vote_average} size="sm" />
-        </div>
-      ) : null}
 
       <div className="mt-2 px-0.5">
         <p className="truncate text-sm font-medium text-ink transition group-hover:text-accent">
