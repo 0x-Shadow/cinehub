@@ -7,11 +7,12 @@ import TasteOnboarding from "./components/TasteOnboarding.jsx";
 import useLibrary from "./hooks/useLibrary.js";
 
 export default function Layout() {
-  const { onboarded, recordTaste, completeOnboarding } = useLibrary();
+  const { onboarded, recordTaste, completeOnboarding, addToWatchlist } = useLibrary();
   const [showOnboarding, setShowOnboarding] = useState(!onboarded);
 
   const closeOnboarding = (liked, skipped) => {
     recordTaste(liked.map((e) => e.id), skipped);
+    liked.forEach((entry) => addToWatchlist(entry));
     completeOnboarding();
     setShowOnboarding(false);
   };
