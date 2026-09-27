@@ -1,3 +1,8 @@
+const W = 1080;
+const H = 1920;
+const PAD = 72;
+const FONT = "-apple-system, BlinkMacSystemFont, 'SF Pro Display', 'Segoe UI', sans-serif";
+
 function roundRect(ctx, x, y, w, h, r) {
   ctx.beginPath();
   ctx.moveTo(x + r, y);
@@ -12,173 +17,320 @@ function roundRect(ctx, x, y, w, h, r) {
   ctx.closePath();
 }
 
-function drawGradientBackground(ctx, w, h) {
-  const grad = ctx.createLinearGradient(0, 0, w, h);
-  grad.addColorStop(0, "#0a0a0b");
-  grad.addColorStop(0.5, "#0f0f12");
-  grad.addColorStop(1, "#0a0a0b");
-  ctx.fillStyle = grad;
-  ctx.fillRect(0, 0, w, h);
+function paintBackground(ctx) {
+  const base = ctx.createLinearGradient(0, 0, 0, H);
+  base.addColorStop(0, "#0c0c0e");
+  base.addColorStop(0.55, "#0a0a0b");
+  base.addColorStop(1, "#070708");
+  ctx.fillStyle = base;
+  ctx.fillRect(0, 0, W, H);
 
-  const glow1 = ctx.createRadialGradient(w * 0.15, h * 0.1, 0, w * 0.15, h * 0.1, w * 0.5);
-  glow1.addColorStop(0, "rgba(255, 176, 32, 0.12)");
-  glow1.addColorStop(1, "transparent");
-  ctx.fillStyle = glow1;
-  ctx.fillRect(0, 0, w, h);
+  const gold = ctx.createRadialGradient(W * 0.12, H * 0.08, 0, W * 0.12, H * 0.08, W * 0.55);
+  gold.addColorStop(0, "rgba(255, 176, 32, 0.14)");
+  gold.addColorStop(1, "transparent");
+  ctx.fillStyle = gold;
+  ctx.fillRect(0, 0, W, H);
 
-  const glow2 = ctx.createRadialGradient(w * 0.85, h * 0.9, 0, w * 0.85, h * 0.9, w * 0.5);
-  glow2.addColorStop(0, "rgba(255, 176, 32, 0.08)");
-  glow2.addColorStop(1, "transparent");
-  ctx.fillStyle = glow2;
-  ctx.fillRect(0, 0, w, h);
+  const violet = ctx.createRadialGradient(W * 0.9, H * 0.95, 0, W * 0.9, H * 0.95, W * 0.5);
+  violet.addColorStop(0, "rgba(88, 80, 236, 0.10)");
+  violet.addColorStop(1, "transparent");
+  ctx.fillStyle = violet;
+  ctx.fillRect(0, 0, W, H);
+
+  const vignette = ctx.createRadialGradient(W / 2, H / 2, H * 0.25, W / 2, H / 2, H * 0.7);
+  vignette.addColorStop(0, "transparent");
+  vignette.addColorStop(1, "rgba(0, 0, 0, 0.35)");
+  ctx.fillStyle = vignette;
+  ctx.fillRect(0, 0, W, H);
 }
 
-function drawGlassCard(ctx, x, y, w, h, r) {
+function glass(ctx, x, y, w, h, r) {
   ctx.save();
   roundRect(ctx, x, y, w, h, r);
-  ctx.fillStyle = "rgba(255, 255, 255, 0.04)";
+  ctx.fillStyle = "rgba(255, 255, 255, 0.05)";
   ctx.fill();
-  ctx.strokeStyle = "rgba(255, 255, 255, 0.08)";
-  ctx.lineWidth = 1;
+  ctx.strokeStyle = "rgba(255, 255, 255, 0.10)";
+  ctx.lineWidth = 1.5;
   ctx.stroke();
 
   roundRect(ctx, x, y, w, h, r);
-  const sheen = ctx.createLinearGradient(x, y, x + w, y + h);
-  sheen.addColorStop(0, "rgba(255, 255, 255, 0.06)");
-  sheen.addColorStop(0.5, "transparent");
-  sheen.addColorStop(1, "rgba(255, 255, 255, 0.02)");
+  const sheen = ctx.createLinearGradient(x, y, x, y + h);
+  sheen.addColorStop(0, "rgba(255, 255, 255, 0.07)");
+  sheen.addColorStop(0.4, "transparent");
   ctx.fillStyle = sheen;
   ctx.fill();
   ctx.restore();
 }
 
-function drawPoster(ctx, img, x, y, w, h, r) {
+function drawCover(ctx, img, x, y, w, h, r) {
+  const ir = img.width / img.height;
+  const tr = w / h;
+  let sx, sy, sw, sh;
+  if (ir > tr) {
+    sh = img.height;
+    sw = sh * tr;
+    sx = (img.width - sw) / 2;
+    sy = 0;
+  } else {
+    sw = img.width;
+    sh = sw / tr;
+    sx = 0;
+    sy = (img.height - sh) / 2;
+  }
   ctx.save();
   roundRect(ctx, x, y, w, h, r);
   ctx.clip();
-  ctx.drawImage(img, x, y, w, h);
+  ctx.drawImage(img, sx, sy, sw, sh, x, y, w, h);
   ctx.restore();
+}
 
+function tile(ctx, x, y, w, h, r, label) {
   ctx.save();
   roundRect(ctx, x, y, w, h, r);
-  ctx.strokeStyle = "rgba(255, 255, 255, 0.1)";
+  ctx.fillStyle = "#1c1c21";
+  ctx.fill();
+  ctx.strokeStyle = "rgba(255, 255, 255, 0.08)";
   ctx.lineWidth = 1;
   ctx.stroke();
+  ctx.fillStyle = "#6b6b76";
+  ctx.font = `700 ${Math.round(h * 0.22)}px ${FONT}`;
+  ctx.textAlign = "center";
+  ctx.textBaseline = "middle";
+  ctx.fillText(label.slice(0, 1).toUpperCase(), x + w / 2, y + h / 2);
   ctx.restore();
 }
 
-function drawStatCard(ctx, x, y, w, h, value, label, accentColor) {
-  drawGlassCard(ctx, x, y, w, h, 16);
-
-  ctx.fillStyle = accentColor;
-  ctx.font = "700 28px -apple-system, BlinkMacSystemFont, 'SF Pro Display', sans-serif";
-  ctx.textAlign = "center";
-  ctx.textBaseline = "middle";
-  ctx.fillText(String(value), x + w / 2, y + h / 2 - 10);
-
-  ctx.fillStyle = "#6b6b76";
-  ctx.font = "600 10px -apple-system, BlinkMacSystemFont, 'SF Pro Display', sans-serif";
-  ctx.fillText(label.toUpperCase(), x + w / 2, y + h / 2 + 14);
+function fitText(ctx, text, maxWidth, font) {
+  ctx.font = font;
+  if (ctx.measureText(text).width <= maxWidth) return text;
+  let out = text;
+  while (out.length > 1 && ctx.measureText(out + "…").width > maxWidth) {
+    out = out.slice(0, -1);
+  }
+  return out + "…";
 }
 
-function drawBranding(ctx, w, h, format) {
-  ctx.fillStyle = "#ffb020";
-  ctx.font = "600 12px -apple-system, BlinkMacSystemFont, 'SF Pro Display', sans-serif";
-  ctx.textAlign = "center";
-  ctx.textBaseline = "middle";
-
-  const brandY = format === "story" ? h - 40 : h - 30;
-  ctx.fillText("CINEHUB", w / 2, brandY);
-
-  ctx.fillStyle = "#6b6b76";
-  ctx.font = "400 10px -apple-system, BlinkMacSystemFont, 'SF Pro Display', sans-serif";
-  ctx.fillText("Made with CineHub", w / 2, brandY + 18);
+function loadPoster(posterPath, size = "w500") {
+  return new Promise((resolve) => {
+    if (!posterPath) {
+      resolve(null);
+      return;
+    }
+    const timer = setTimeout(() => resolve(null), 8000);
+    const image = new Image();
+    image.crossOrigin = "anonymous";
+    image.onload = () => {
+      clearTimeout(timer);
+      resolve(image);
+    };
+    image.onerror = () => {
+      clearTimeout(timer);
+      resolve(null);
+    };
+    image.src = `https://image.tmdb.org/t/p/${size}${posterPath}`;
+  });
 }
 
-export async function generateWatchlistPNG(items, stats, format = "story") {
-  const formats = {
-    story: { w: 1080, h: 1920, cols: 3, rows: 2, pad: 60 },
-    poster: { w: 1080, h: 1080, cols: 3, rows: 2, pad: 60 },
-    wide: { w: 1200, h: 630, cols: 6, rows: 1, pad: 40 },
-  };
+function yearOf(entry) {
+  const iso = entry.release_date ?? entry.first_air_date ?? "";
+  return iso ? iso.slice(0, 4) : "";
+}
 
-  const cfg = formats[format] || formats.story;
+export async function generateShareImage(
+  items,
+  { stats = { watchlist: 0, favourites: 0, hours: 0, minutes: 0 }, tasteLine = "" } = {}
+) {
+  const list = (items ?? []).slice(0, 6);
   const canvas = document.createElement("canvas");
-  canvas.width = cfg.w;
-  canvas.height = cfg.h;
+  canvas.width = W;
+  canvas.height = H;
   const ctx = canvas.getContext("2d");
 
-  drawGradientBackground(ctx, cfg.w, cfg.h);
+  paintBackground(ctx);
 
-  const headerH = format === "wide" ? 80 : 140;
-  const footerH = format === "wide" ? 60 : 100;
-  const gridH = cfg.h - headerH - footerH - 80;
-
-  const titleSize = format === "wide" ? 32 : 48;
-  ctx.fillStyle = "#f5f5f7";
-  ctx.font = `700 ${titleSize}px -apple-system, BlinkMacSystemFont, 'SF Pro Display', sans-serif`;
   ctx.textAlign = "center";
   ctx.textBaseline = "middle";
-  ctx.fillText("My Watchlist", cfg.w / 2, headerH / 2 + 10);
+  try {
+    ctx.letterSpacing = "6px";
+  } catch {
+    /* older browsers ignore letter-spacing */
+  }
+  ctx.fillStyle = "#ffb020";
+  ctx.font = `600 20px ${FONT}`;
+  ctx.fillText("CINEHUB", W / 2, 128);
+  try {
+    ctx.letterSpacing = "0px";
+  } catch {
+    /* ignore */
+  }
+
+  ctx.fillStyle = "#f5f5f7";
+  ctx.font = `700 72px ${FONT}`;
+  ctx.fillText("My Watchlist", W / 2, 200);
 
   ctx.fillStyle = "#a1a1aa";
-  ctx.font = `400 ${format === "wide" ? 14 : 18}px -apple-system, BlinkMacSystemFont, 'SF Pro Display', sans-serif`;
-  ctx.fillText(`${items.length} titles · ${stats.hours}h ${stats.minutes}m of watching`, cfg.w / 2, headerH / 2 + titleSize / 2 + 20);
-
-  const gridTop = headerH + 40;
-  const gap = format === "wide" ? 12 : 16;
-  const posterW = (cfg.w - cfg.pad * 2 - gap * (cfg.cols - 1)) / cfg.cols;
-  const posterH = format === "wide" ? posterW * 1.5 : Math.min(posterW * 1.5, gridH / cfg.rows - 20);
-
-  const images = await Promise.all(
-    items.slice(0, cfg.cols * cfg.rows).map(
-      (item) =>
-        new Promise((resolve) => {
-          const img = new Image();
-          img.crossOrigin = "anonymous";
-          img.onload = () => resolve(img);
-          img.onerror = () => resolve(null);
-          img.src = `https://image.tmdb.org/t/p/w300${item.posterPath}`;
-        })
-    )
+  ctx.font = `400 24px ${FONT}`;
+  ctx.fillText(
+    `${list.length} ${list.length === 1 ? "title" : "titles"} · ${stats.hours}h ${stats.minutes}m of watching`,
+    W / 2,
+    258
   );
 
-  images.forEach((img, i) => {
-    const col = i % cfg.cols;
-    const row = Math.floor(i / cfg.cols);
-    const x = cfg.pad + col * (posterW + gap);
-    const y = gridTop + row * (posterH + gap + 24);
+  const hero = list[0];
+  const heroY = 320;
+  const heroH = 470;
+  const heroW = W - PAD * 2;
+  ctx.save();
+  ctx.shadowColor = "rgba(0, 0, 0, 0.55)";
+  ctx.shadowBlur = 60;
+  ctx.shadowOffsetY = 24;
+  roundRect(ctx, PAD, heroY, heroW, heroH, 36);
+  ctx.fillStyle = "#131316";
+  ctx.fill();
+  ctx.restore();
 
-    if (img) {
-      drawPoster(ctx, img, x, y, posterW, posterH, 12);
+  if (hero) {
+    const heroImg = await loadPoster(hero.posterPath, "w500");
+    if (heroImg) {
+      drawCover(ctx, heroImg, PAD, heroY, heroW, heroH, 36);
     } else {
-      ctx.save();
-      roundRect(ctx, x, y, posterW, posterH, 12);
-      ctx.fillStyle = "#1c1c21";
-      ctx.fill();
-      ctx.restore();
+      tile(ctx, PAD, heroY, heroW, heroH, 36, hero.title ?? "?");
     }
 
+    const scrim = ctx.createLinearGradient(0, heroY + heroH * 0.35, 0, heroY + heroH);
+    scrim.addColorStop(0, "transparent");
+    scrim.addColorStop(1, "rgba(0, 0, 0, 0.82)");
+    ctx.save();
+    roundRect(ctx, PAD, heroY, heroW, heroH, 36);
+    ctx.clip();
+    ctx.fillStyle = scrim;
+    ctx.fillRect(PAD, heroY, heroW, heroH);
+    ctx.restore();
+
+    glass(ctx, PAD + 28, heroY + 28, 168, 48, 24);
+    ctx.fillStyle = "#ffb020";
+    ctx.font = `700 17px ${FONT}`;
+    ctx.textAlign = "center";
+    ctx.fillText("★ NO. 1 PICK", PAD + 28 + 84, heroY + 28 + 25);
+
+    const heroTitle = fitText(ctx, hero.title ?? "Untitled", heroW - 220, `700 38px ${FONT}`);
+    ctx.textAlign = "left";
+    ctx.fillStyle = "#f5f5f7";
+    ctx.font = `700 38px ${FONT}`;
+    ctx.fillText(heroTitle, PAD + 32, heroY + heroH - 78);
+
+    const meta = [yearOf(hero), hero.vote_average ? `${Number(hero.vote_average).toFixed(1)} / 10` : ""]
+      .filter(Boolean)
+      .join("  ·  ");
+    if (meta) {
+      ctx.fillStyle = "#d7d7dc";
+      ctx.font = `500 21px ${FONT}`;
+      ctx.fillText(meta, PAD + 32, heroY + heroH - 34);
+    }
+  }
+
+  ctx.textAlign = "left";
+  try {
+    ctx.letterSpacing = "4px";
+  } catch {
+    /* ignore */
+  }
+  ctx.fillStyle = "#6b6b76";
+  ctx.font = `600 17px ${FONT}`;
+  ctx.fillText("MORE TO WATCH", PAD, 872);
+  try {
+    ctx.letterSpacing = "0px";
+  } catch {
+    /* ignore */
+  }
+
+  const minis = list.slice(1, 6);
+  const gap = 20;
+  const miniW = (heroW - gap * 4) / 5;
+  const miniH = Math.round(miniW * 1.5);
+  const miniY = 900;
+  const miniImages = await Promise.all(minis.map((e) => loadPoster(e.posterPath, "w300")));
+
+  minis.forEach((entry, i) => {
+    const x = PAD + i * (miniW + gap);
+    const image = miniImages[i];
+    if (image) {
+      ctx.save();
+      ctx.shadowColor = "rgba(0, 0, 0, 0.45)";
+      ctx.shadowBlur = 24;
+      ctx.shadowOffsetY = 10;
+      drawCover(ctx, image, x, miniY, miniW, miniH, 18);
+      ctx.restore();
+    } else {
+      tile(ctx, x, miniY, miniW, miniH, 18, entry.title ?? "?");
+    }
     ctx.fillStyle = "#a1a1aa";
-    ctx.font = "400 11px -apple-system, BlinkMacSystemFont, 'SF Pro Display', sans-serif";
+    ctx.font = `400 15px ${FONT}`;
     ctx.textAlign = "center";
     ctx.textBaseline = "top";
-    const title = items[i].title.length > 18 ? items[i].title.slice(0, 18) + "..." : items[i].title;
-    ctx.fillText(title, x + posterW / 2, y + posterH + 6);
+    ctx.fillText(fitText(ctx, entry.title ?? "Untitled", miniW + 8, `400 15px ${FONT}`), x + miniW / 2, miniY + miniH + 10);
   });
 
-  const statsY = gridTop + cfg.rows * (posterH + gap + 24) + 20;
-  const statW = format === "wide" ? 120 : 140;
-  const statH = format === "wide" ? 60 : 70;
-  const statGap = format === "wide" ? 16 : 20;
-  const totalStatsW = 3 * statW + 2 * statGap;
-  const statsX = (cfg.w - totalStatsW) / 2;
+  const statsY = 1330;
+  const statsH = 170;
+  ctx.save();
+  ctx.shadowColor = "rgba(0, 0, 0, 0.5)";
+  ctx.shadowBlur = 50;
+  ctx.shadowOffsetY = 18;
+  glass(ctx, PAD, statsY, heroW, statsH, 28);
+  ctx.restore();
 
-  drawStatCard(ctx, statsX, statsY, statW, statH, stats.watchlist, "Watchlist", "#ffb020");
-  drawStatCard(ctx, statsX + statW + statGap, statsY, statW, statH, stats.favourites, "Favourites", "#30d158");
-  drawStatCard(ctx, statsX + 2 * (statW + statGap), statsY, statW, statH, `${stats.hours}h`, "Watch Time", "#0a84ff");
+  const metrics = [
+    { value: String(stats.watchlist ?? 0), label: "WATCHLIST" },
+    { value: String(stats.favourites ?? 0), label: "FAVOURITES" },
+    { value: `${stats.hours ?? 0}H`, label: "WATCH TIME" },
+  ];
+  metrics.forEach((m, i) => {
+    const cx = PAD + (heroW / 3) * (i + 0.5);
+    ctx.textAlign = "center";
+    ctx.textBaseline = "middle";
+    ctx.fillStyle = i === 0 ? "#ffb020" : "#f5f5f7";
+    ctx.font = `700 52px ${FONT}`;
+    ctx.fillText(m.value, cx, statsY + statsH / 2 - 16);
+    ctx.fillStyle = "#6b6b76";
+    ctx.font = `600 15px ${FONT}`;
+    try {
+      ctx.letterSpacing = "3px";
+    } catch {
+      /* ignore */
+    }
+    ctx.fillText(m.label, cx, statsY + statsH / 2 + 34);
+    try {
+      ctx.letterSpacing = "0px";
+    } catch {
+      /* ignore */
+    }
+  });
 
-  drawBranding(ctx, cfg.w, cfg.h, format);
+  if (tasteLine) {
+    ctx.textAlign = "center";
+    ctx.fillStyle = "#a1a1aa";
+    ctx.font = `400 22px ${FONT}`;
+    ctx.fillText(fitText(ctx, tasteLine, heroW - 40, `400 22px ${FONT}`), W / 2, 1560);
+  }
+
+  ctx.textAlign = "center";
+  ctx.fillStyle = "#ffb020";
+  ctx.font = `600 19px ${FONT}`;
+  try {
+    ctx.letterSpacing = "5px";
+  } catch {
+    /* ignore */
+  }
+  ctx.fillText("CINEHUB", W / 2, 1830);
+  try {
+    ctx.letterSpacing = "0px";
+  } catch {
+    /* ignore */
+  }
+  ctx.fillStyle = "#6b6b76";
+  ctx.font = `400 17px ${FONT}`;
+  ctx.fillText("cinehub.app", W / 2, 1862);
 
   return canvas.toDataURL("image/png");
 }

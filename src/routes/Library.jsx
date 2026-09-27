@@ -6,7 +6,7 @@ import PosterGrid from "../components/PosterGrid.jsx";
 import EmptyState from "../components/EmptyState.jsx";
 import Chip from "../components/Chip.jsx";
 import { genreBreakdown, sortLibrary } from "../lib/library.js";
-import { generateWatchlistPNG, downloadPNG } from "../lib/pngExport.js";
+import { generateShareImage, downloadPNG } from "../lib/pngExport.js";
 import useLibrary from "../hooks/useLibrary.js";
 import useTmdb from "../hooks/useTmdb.js";
 import { listGenres, movieDetails, tvDetails } from "../api/tmdb.js";
@@ -62,14 +62,26 @@ export default function Library() {
     URL.revokeObjectURL(url);
   };
 
-  const [exportFormat, setExportFormat] = useState("story");
   const [exporting, setExporting] = useState(false);
+
+  const tasteLine = useMemo(() => {
+    const top = breakdown.slice(0, 2).map((g) => g.name);
+    return top.length ? `Heavy on ${top.join(" · ")}` : "";
+  }, [breakdown]);
 
   const doExportPNG = async () => {
     setExporting(true);
     try {
-      const dataUrl = await generateWatchlistPNG(sorted, hours, exportFormat);
-      downloadPNG(dataUrl, `cinehub-watchlist-${exportFormat}.png`);
+      const dataUrl = await generateShareImage(sorted, {
+        stats: {
+          watchlist: watchlist.length,
+          favourites: favorites.length,
+          hours: hours.hours,
+          minutes: hours.minutes,
+        },
+        tasteLine,
+      });
+      downloadPNG(dataUrl, "cinehub-watchlist.png");
     } finally {
       setExporting(false);
     }
@@ -113,13 +125,18 @@ export default function Library() {
                       </svg>
                       Export JSON
                     </button>
-                    <button type="button" onClick={doExportPNG} className="tap-target glass inline-flex items-center gap-2 rounded-full px-5 py-2.5 text-sm font-medium text-accent ring-1 ring-accent/30 transition hover:ring-accent/50">
+                    <button
+                      type="button"
+                      onClick={doExportPNG}
+                      disabled={exporting || sorted.length === 0}
+                      className="tap-target glass inline-flex items-center gap-2 rounded-full px-5 py-2.5 text-sm font-semibold text-accent ring-1 ring-accent/30 transition hover:ring-accent/50 disabled:opacity-40"
+                    >
                       <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
                         <rect x="3" y="3" width="18" height="18" rx="2" />
                         <circle cx="8.5" cy="8.5" r="1.5" />
                         <path d="M21 15l-5-5L5 21" />
                       </svg>
-                      Export Template
+                      {exporting ? "Generating image…" : "Share watchlist image"}
                     </button>
                     <button type="button" onClick={() => fileRef.current?.click()} className="tap-target glass inline-flex items-center gap-2 rounded-full px-5 py-2.5 text-sm font-medium text-ink ring-1 ring-white/10 transition hover:ring-white/20">
                       <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
@@ -134,44 +151,6 @@ export default function Library() {
                       Clear library
                     </button>
                     <input ref={fileRef} type="file" accept="application/json" className="hidden" onChange={doImport} />
-                  </div>
-
-                  <div className="space-y-3">
-                    <p className="text-xs font-semibold uppercase tracking-[0.15em] text-faint">Export as PNG</p>
-                    <div className="flex flex-wrap gap-2">
-                      {[
-                        { key: "story", label: "Story", desc: "1080×1920" },
-                        { key: "poster", label: "Poster", desc: "1080×1080" },
-                        { key: "wide", label: "Wide", desc: "1200×630" },
-                      ].map((f) => (
-                        <button
-                          key={f.key}
-                          type="button"
-                          onClick={() => setExportFormat(f.key)}
-                          className={`glass-soft tap-target rounded-xl px-4 py-2.5 text-left ring-1 transition-all duration-300 ${
-                            exportFormat === f.key
-                              ? "glass-card ring-accent/40"
-                              : "ring-white/5 hover:ring-white/10"
-                          }`}
-                        >
-                          <span className="block text-sm font-medium text-ink">{f.label}</span>
-                          <span className="block text-[10px] text-faint">{f.desc}</span>
-                        </button>
-                      ))}
-                    </div>
-                    <button
-                      type="button"
-                      onClick={doExportPNG}
-                      disabled={exporting || sorted.length === 0}
-                      className="tap-target glass inline-flex items-center gap-2 rounded-full px-5 py-2.5 text-sm font-semibold text-accent ring-1 ring-accent/30 transition hover:ring-accent/50 disabled:opacity-40"
-                    >
-                      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
-                        <rect x="3" y="3" width="18" height="18" rx="2" />
-                        <circle cx="8.5" cy="8.5" r="1.5" />
-                        <path d="M21 15l-5-5L5 21" />
-                      </svg>
-                      {exporting ? "Generating..." : "Download PNG"}
-                    </button>
                   </div>
 
                   {importStatus ? <p className="text-sm text-muted">{importStatus}</p> : null}
