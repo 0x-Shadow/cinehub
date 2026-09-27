@@ -3,8 +3,13 @@ import { Link } from "react-router-dom";
 import PosterCard from "./PosterCard.jsx";
 import { RailSkeleton } from "./Skeleton.jsx";
 
+const GLIDE_MS = 650;
+const easeOutCubic = (t) => 1 - Math.pow(1 - t, 3);
+
 export default function Rail({ title, items = [], size = "md", showRating = true, href, loading = false, skeletonCount = 8 }) {
   const railRef = useRef(null);
+  const glideRef = useRef(null);
+  const tickingRef = useRef(false);
   const [canScrollLeft, setCanScrollLeft] = useState(false);
   const [canScrollRight, setCanScrollRight] = useState(false);
   const [hasOverflow, setHasOverflow] = useState(false);
@@ -16,18 +21,46 @@ export default function Rail({ title, items = [], size = "md", showRating = true
     setHasOverflow(overflow);
     setCanScrollLeft(overflow && el.scrollLeft > 8);
     setCanScrollRight(overflow && el.scrollLeft < el.scrollWidth - el.clientWidth - 8);
+    tickingRef.current = false;
   }, []);
+
+  const requestCheck = useCallback(() => {
+    if (tickingRef.current) return;
+    tickingRef.current = true;
+    requestAnimationFrame(checkScroll);
+  }, [checkScroll]);
 
   useEffect(() => {
     checkScroll();
     window.addEventListener("resize", checkScroll);
-    return () => window.removeEventListener("resize", checkScroll);
+    return () => {
+      window.removeEventListener("resize", checkScroll);
+      if (glideRef.current) cancelAnimationFrame(glideRef.current);
+    };
   }, [checkScroll, items.length, loading]);
 
   const scroll = (dir) => {
     const el = railRef.current;
     if (!el) return;
-    el.scrollBy({ left: dir * el.clientWidth * 0.8, behavior: "smooth" });
+    if (glideRef.current) cancelAnimationFrame(glideRef.current);
+    const from = el.scrollLeft;
+    const max = el.scrollWidth - el.clientWidth;
+    const to = Math.min(Math.max(from + dir * el.clientWidth * 0.8, 0), max);
+    if (to === from) return;
+    el.style.scrollSnapType = "none";
+    const start = performance.now();
+    const step = (now) => {
+      const t = Math.min((now - start) / GLIDE_MS, 1);
+      el.scrollLeft = from + (to - from) * easeOutCubic(t);
+      if (t < 1) {
+        glideRef.current = requestAnimationFrame(step);
+      } else {
+        glideRef.current = null;
+        el.style.scrollSnapType = "";
+        checkScroll();
+      }
+    };
+    glideRef.current = requestAnimationFrame(step);
   };
 
   if (loading) {
@@ -53,8 +86,8 @@ export default function Rail({ title, items = [], size = "md", showRating = true
       <div className="relative">
         <div
           ref={railRef}
-          onScroll={checkScroll}
-          className="rail rail-mask -mx-4 flex gap-4 overflow-x-auto scroll-smooth px-4 pb-2 xs:mx-0 xs:px-0 sm:mx-0 sm:px-0"
+          onScroll={requestCheck}
+          className="rail rail-mask -mx-4 flex gap-4 overflow-x-auto px-4 pb-2 xs:mx-0 xs:px-0 sm:mx-0 sm:px-0"
         >
           {items.map((item) => (
             <PosterCard key={`${item.id}-${item.title ?? item.name}`} item={item} size={size} showRating={showRating} />
