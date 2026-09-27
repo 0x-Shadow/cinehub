@@ -31,7 +31,7 @@ export default function Library() {
   const breakdown = useMemo(() => genreBreakdown(list, allGenres), [list, allGenres]);
 
   useEffect(() => {
-    const missing = list.filter((e) => !e.runtime && !runtimes[e.id]);
+    const missing = [...watchlist, ...favorites].filter((e) => !e.runtime && !runtimes[e.id]);
     if (!missing.length) return;
     let cancelled = false;
     missing.forEach((entry) => {
@@ -45,12 +45,15 @@ export default function Library() {
         .catch(() => {});
     });
     return () => { cancelled = true; };
-  }, [list, runtimes]);
+  }, [watchlist, favorites, runtimes]);
 
   const hours = useMemo(() => {
-    const total = list.reduce((sum, e) => sum + (e.runtime ?? runtimes[e.id] ?? 0), 0);
+    const total = watchlist.reduce((sum, e) => sum + (e.runtime ?? runtimes[e.id] ?? 0), 0);
     return { hours: Math.floor(total / 60), minutes: total % 60 };
-  }, [list, runtimes]);
+  }, [watchlist, runtimes]);
+
+  const shareItems = useMemo(() => sortLibrary(watchlist, "addedAt"), [watchlist]);
+  const shareBreakdown = useMemo(() => genreBreakdown(watchlist, allGenres), [watchlist, allGenres]);
 
   const doExport = () => {
     const blob = new Blob([exportData()], { type: "application/json" });
@@ -65,14 +68,14 @@ export default function Library() {
   const [exporting, setExporting] = useState(false);
 
   const tasteLine = useMemo(() => {
-    const top = breakdown.slice(0, 2).map((g) => g.name);
+    const top = shareBreakdown.slice(0, 2).map((g) => g.name);
     return top.length ? `Heavy on ${top.join(" · ")}` : "";
-  }, [breakdown]);
+  }, [shareBreakdown]);
 
   const doExportPNG = async () => {
     setExporting(true);
     try {
-      const dataUrl = await generateShareImage(sorted, {
+      const dataUrl = await generateShareImage(shareItems, {
         stats: {
           watchlist: watchlist.length,
           favourites: favorites.length,
@@ -128,7 +131,7 @@ export default function Library() {
                     <button
                       type="button"
                       onClick={doExportPNG}
-                      disabled={exporting || sorted.length === 0}
+                      disabled={exporting || watchlist.length === 0}
                       className="tap-target glass inline-flex items-center gap-2 rounded-full px-5 py-2.5 text-sm font-semibold text-accent ring-1 ring-accent/30 transition hover:ring-accent/50 disabled:opacity-40"
                     >
                       <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
