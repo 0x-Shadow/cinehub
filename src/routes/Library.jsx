@@ -6,6 +6,7 @@ import PosterGrid from "../components/PosterGrid.jsx";
 import EmptyState from "../components/EmptyState.jsx";
 import Chip from "../components/Chip.jsx";
 import { genreBreakdown, sortLibrary } from "../lib/library.js";
+import { generateWatchlistPNG, downloadPNG } from "../lib/pngExport.js";
 import useLibrary from "../hooks/useLibrary.js";
 import useTmdb from "../hooks/useTmdb.js";
 import { listGenres, movieDetails, tvDetails } from "../api/tmdb.js";
@@ -61,92 +62,17 @@ export default function Library() {
     URL.revokeObjectURL(url);
   };
 
-  const doExportTemplate = () => {
-    const items = sorted.slice(0, 6);
-    const html = `<!doctype html>
-<html lang="en">
-<head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>My Watchlist - CineHub</title>
-<style>
-  * { margin: 0; padding: 0; box-sizing: border-box; }
-  body {
-    font-family: -apple-system, BlinkMacSystemFont, 'SF Pro Display', 'Segoe UI', sans-serif;
-    background: #0a0a0b;
-    color: #f5f5f7;
-    min-height: 100vh;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    padding: 24px;
-  }
-  .card {
-    background: rgba(255,255,255,0.04);
-    border: 1px solid rgba(255,255,255,0.08);
-    border-radius: 24px;
-    padding: 32px;
-    max-width: 420px;
-    width: 100%;
-    backdrop-filter: blur(20px);
-  }
-  .header { text-align: center; margin-bottom: 24px; }
-  .logo { font-size: 14px; font-weight: 600; color: #ffb020; letter-spacing: 0.05em; text-transform: uppercase; }
-  h1 { font-size: 28px; font-weight: 700; margin-top: 8px; letter-spacing: -0.02em; }
-  .subtitle { font-size: 14px; color: #a1a1aa; margin-top: 4px; }
-  .grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 12px; margin-bottom: 24px; }
-  .poster { aspect-ratio: 2/3; border-radius: 12px; overflow: hidden; background: #1c1c21; }
-  .poster img { width: 100%; height: 100%; object-fit: cover; }
-  .poster-title { font-size: 11px; color: #a1a1aa; margin-top: 6px; text-align: center; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
-  .stats { display: flex; justify-content: center; gap: 24px; padding-top: 20px; border-top: 1px solid rgba(255,255,255,0.06); }
-  .stat { text-align: center; }
-  .stat-value { font-size: 20px; font-weight: 700; color: #ffb020; }
-  .stat-label { font-size: 11px; color: #6b6b76; text-transform: uppercase; letter-spacing: 0.05em; margin-top: 2px; }
-  .footer { text-align: center; margin-top: 20px; font-size: 12px; color: #6b6b76; }
-</style>
-</head>
-<body>
-  <div class="card">
-    <div class="header">
-      <div class="logo">CineHub</div>
-      <h1>My Watchlist</h1>
-      <p class="subtitle">${items.length} titles &middot; ${hours.hours}h ${hours.minutes}m of watching</p>
-    </div>
-    <div class="grid">
-      ${items.map((e) => `
-        <div>
-          <div class="poster">
-            <img src="https://image.tmdb.org/t/p/w300${e.posterPath}" alt="${e.title}" loading="lazy">
-          </div>
-          <p class="poster-title">${e.title}</p>
-        </div>
-      `).join("")}
-    </div>
-    <div class="stats">
-      <div class="stat">
-        <div class="stat-value">${watchlist.length}</div>
-        <div class="stat-label">Watchlist</div>
-      </div>
-      <div class="stat">
-        <div class="stat-value">${favorites.length}</div>
-        <div class="stat-label">Favourites</div>
-      </div>
-      <div class="stat">
-        <div class="stat-value">${hours.hours}h</div>
-        <div class="stat-label">Watch Time</div>
-      </div>
-    </div>
-    <p class="footer">Made with CineHub &middot; cinehub.app</p>
-  </div>
-</body>
-</html>`;
-    const blob = new Blob([html], { type: "text/html" });
-    const url = URL.createObjectURL(blob);
-    const a = document.createElement("a");
-    a.href = url;
-    a.download = "cinehub-watchlist.html";
-    a.click();
-    URL.revokeObjectURL(url);
+  const [exportFormat, setExportFormat] = useState("story");
+  const [exporting, setExporting] = useState(false);
+
+  const doExportPNG = async () => {
+    setExporting(true);
+    try {
+      const dataUrl = await generateWatchlistPNG(sorted, hours, exportFormat);
+      downloadPNG(dataUrl, `cinehub-watchlist-${exportFormat}.png`);
+    } finally {
+      setExporting(false);
+    }
   };
 
   const doImport = (e) => {
@@ -187,7 +113,7 @@ export default function Library() {
                       </svg>
                       Export JSON
                     </button>
-                    <button type="button" onClick={doExportTemplate} className="tap-target glass inline-flex items-center gap-2 rounded-full px-5 py-2.5 text-sm font-medium text-accent ring-1 ring-accent/30 transition hover:ring-accent/50">
+                    <button type="button" onClick={doExportPNG} className="tap-target glass inline-flex items-center gap-2 rounded-full px-5 py-2.5 text-sm font-medium text-accent ring-1 ring-accent/30 transition hover:ring-accent/50">
                       <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
                         <rect x="3" y="3" width="18" height="18" rx="2" />
                         <circle cx="8.5" cy="8.5" r="1.5" />
@@ -209,6 +135,45 @@ export default function Library() {
                     </button>
                     <input ref={fileRef} type="file" accept="application/json" className="hidden" onChange={doImport} />
                   </div>
+
+                  <div className="space-y-3">
+                    <p className="text-xs font-semibold uppercase tracking-[0.15em] text-faint">Export as PNG</p>
+                    <div className="flex flex-wrap gap-2">
+                      {[
+                        { key: "story", label: "Story", desc: "1080×1920" },
+                        { key: "poster", label: "Poster", desc: "1080×1080" },
+                        { key: "wide", label: "Wide", desc: "1200×630" },
+                      ].map((f) => (
+                        <button
+                          key={f.key}
+                          type="button"
+                          onClick={() => setExportFormat(f.key)}
+                          className={`glass-soft tap-target rounded-xl px-4 py-2.5 text-left ring-1 transition-all duration-300 ${
+                            exportFormat === f.key
+                              ? "glass-card ring-accent/40"
+                              : "ring-white/5 hover:ring-white/10"
+                          }`}
+                        >
+                          <span className="block text-sm font-medium text-ink">{f.label}</span>
+                          <span className="block text-[10px] text-faint">{f.desc}</span>
+                        </button>
+                      ))}
+                    </div>
+                    <button
+                      type="button"
+                      onClick={doExportPNG}
+                      disabled={exporting || sorted.length === 0}
+                      className="tap-target glass inline-flex items-center gap-2 rounded-full px-5 py-2.5 text-sm font-semibold text-accent ring-1 ring-accent/30 transition hover:ring-accent/50 disabled:opacity-40"
+                    >
+                      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+                        <rect x="3" y="3" width="18" height="18" rx="2" />
+                        <circle cx="8.5" cy="8.5" r="1.5" />
+                        <path d="M21 15l-5-5L5 21" />
+                      </svg>
+                      {exporting ? "Generating..." : "Download PNG"}
+                    </button>
+                  </div>
+
                   {importStatus ? <p className="text-sm text-muted">{importStatus}</p> : null}
                   <p className="text-xs text-faint">Export saves your watchlist, favourites, and taste profile to a JSON file you can re-import later.</p>
                 </div>
